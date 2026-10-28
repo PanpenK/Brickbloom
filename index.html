@@ -1374,7 +1374,15 @@ const SKINS = [
 const K_SKIN='brickbloom:skin';
 let skin = (()=>{ try{ return localStorage.getItem(K_SKIN); }catch(e){ return null; } })();
 if (!SKINS.some(x=>x.id===skin)) skin='pic-animals';
-function applySkin(){ document.body.dataset.bg=skin; for (const id of ['scrHome','scrGame']) document.getElementById(id).dataset.skin=skin; colorCache={}; }
+// Bricks that look alike count as the same colour: picture styles with 4 tiles repeat them across the 8 slots.
+let same = [0,1,2,3,4,5,6,7];
+function applySkin(){
+  document.body.dataset.bg=skin; for (const id of ['scrHome','scrGame']) document.getElementById(id).dataset.skin=skin; colorCache={};
+  const cs=getComputedStyle(document.getElementById('scrGame')), seen={};
+  same = COLORS.map(c=>{ const v=(cs.getPropertyValue(`--k${c+1}`).trim()+'|'+cs.getPropertyValue(`--p${c+1}`).trim()+'|'+tileKey(c)); return seen[v]??(seen[v]=c); });
+}
+function tileKey(c){ const probe=document.createElement('div'); probe.className='blk'; probe.dataset.k=c+1; probe.hidden=true; const i=document.createElement('i'); i.className='sk'; probe.append(i); document.getElementById('scrGame').append(probe); const bg=getComputedStyle(i).backgroundImage; probe.remove(); return bg; }
+const sameColor = (a,b) => same[a]===same[b];
 const skEl = () => Object.assign(document.createElement('i'),{className:'sk'});
 function tileEl(k, cls){ const b=document.createElement('div'); b.className='blk'+(cls?' '+cls:''); b.dataset.k=k; b.style.setProperty('--c',`var(--k${k})`); b.append(skEl()); return b; }
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
@@ -1418,7 +1426,7 @@ function fitsAt(L, g, b, r, c){
 function exitGate(L, b, r, c){
   const e = ext(b.cells);
   for (const gt of L.gates){
-    if (gt.color!==b.color) continue;
+    if (!sameColor(gt.color, b.color)) continue;
     if ((b.axis==='h' && (gt.side==='T'||gt.side==='B')) || (b.axis==='v' && (gt.side==='L'||gt.side==='R'))) continue;
     if (gt.side==='R' && c+e.w===L.W && r>=gt.s && r+e.h<=gt.s+gt.len) return gt;
     if (gt.side==='L' && c===0 && r>=gt.s && r+e.h<=gt.s+gt.len) return gt;
@@ -1903,7 +1911,7 @@ let rT=null;
 window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if (screen==='game' && L){ layout(); renderBoard(); renderBricks(true); } },150); });
 document.addEventListener('visibilitychange',()=>{ if (document.hidden && screen==='game' && !done && overEl.hidden) openPause(); });
 
-window.__bb = {genLevel, solve, get L(){return L;}, startLevel};
+window.__bb = {genLevel, solve, get L(){return L;}, startLevel, get same(){return same;}};
 applySkin();
 show('home');
 })();
