@@ -1374,7 +1374,7 @@ const SKINS = [
 const K_SKIN='brickbloom:skin';
 let skin = (()=>{ try{ return localStorage.getItem(K_SKIN); }catch(e){ return null; } })();
 if (!SKINS.some(x=>x.id===skin)) skin='pic-animals';
-function applySkin(){ document.body.dataset.bg=skin; for (const id of ['scrHome','scrGame','scrStyles']) document.getElementById(id).dataset.skin=skin; colorCache={}; }
+function applySkin(){ document.body.dataset.bg=skin; for (const id of ['scrHome','scrGame']) document.getElementById(id).dataset.skin=skin; colorCache={}; }
 const skEl = () => Object.assign(document.createElement('i'),{className:'sk'});
 function tileEl(k, cls){ const b=document.createElement('div'); b.className='blk'+(cls?' '+cls:''); b.dataset.k=k; b.style.setProperty('--c',`var(--k${k})`); b.append(skEl()); return b; }
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
